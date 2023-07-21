@@ -305,10 +305,11 @@ window.addEventListener('DOMContentLoaded', () => {
 	const slidesWrapper = document.querySelector('.offer__slider-wrapper')
 	const slidesField = slidesWrapper.querySelector('.offer__slider-inner')
 	const slides = slidesField.querySelectorAll('.offer__slide')
-	const prev = document.querySelector('.offer__slider-prev')
-	const next = document.querySelector('.offer__slider-next')
-	const total = document.querySelector('#total')
-	const current = document.querySelector('#current')
+	const slider = document.querySelector('.offer__slider')
+	const prev = slider.querySelector('.offer__slider-prev')
+	const next = slider.querySelector('.offer__slider-next')
+	const total = slider.querySelector('#total')
+	const current = slider.querySelector('#current')
 	const width = window.getComputedStyle(slidesWrapper).width
 
 	let slideIndex = 1
@@ -332,6 +333,40 @@ window.addEventListener('DOMContentLoaded', () => {
 		slide.style.width = width
 	})
 
+	slider.style.position = 'relative'
+
+	const indicators = document.createElement('ol')
+	const dots = []
+	indicators.classList.add('carousel-indicators')
+
+	for (let i = 0; i < slides.length; i++) {
+		const dot = document.createElement('li')
+		dot.setAttribute('data-slide-to', i + 1)
+		dot.classList.add('dot')
+
+		if (i == 0) {
+			dot.classList.add('dot_active')
+		}
+
+		indicators.append(dot)
+		dots.push(dot)
+	}
+
+	slider.append(indicators)
+
+	const activeDot = index => {
+		dots.forEach(dot => dot.classList.remove('dot_active'))
+		dots[index].classList.add('dot_active')
+	}
+
+	const currentNumConversion = () => {
+		if (slides.length < 10) {
+			current.textContent = `0${slideIndex}`
+		} else {
+			current.textContent = slideIndex
+		}
+	}
+
 	next.addEventListener('click', () => {
 		if (offset == +width.slice(0, width.length - 2) * (slides.length - 1)) {
 			offset = 0
@@ -347,11 +382,9 @@ window.addEventListener('DOMContentLoaded', () => {
 			slideIndex++
 		}
 
-		if (slides.length < 10) {
-			current.textContent = `0${slideIndex}`
-		} else {
-			current.textContent = slideIndex
-		}
+		currentNumConversion()
+
+		activeDot(slideIndex - 1)
 	})
 
 	prev.addEventListener('click', () => {
@@ -369,11 +402,23 @@ window.addEventListener('DOMContentLoaded', () => {
 			slideIndex--
 		}
 
-		if (slides.length < 10) {
-			current.textContent = `0${slideIndex}`
-		} else {
-			current.textContent = slideIndex
-		}
+		currentNumConversion()
+
+		activeDot(slideIndex - 1)
 	})
 
+	dots.forEach(dot => {
+		dot.addEventListener('click', event => {
+			const slideTo = event.target.getAttribute('data-slide-to')
+
+			slideIndex = slideTo
+			offset = +width.slice(0, width.length - 2) * (slideTo - 1)
+
+			slidesField.style.transform = `translateX(-${offset}px)`
+
+			currentNumConversion()
+
+			activeDot(slideIndex - 1)
+		})
+	})
 })
